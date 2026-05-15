@@ -1,0 +1,4 @@
+interface:
+  display_name: "Two-Role Agent Workflow"
+  short_description: "Set up planner/implementer collaboration workflows"
+  default_prompt: "Create a planner/implementer collaboration workflow with clear roles, handoff docs, small scoped tasks, and Git ownership."

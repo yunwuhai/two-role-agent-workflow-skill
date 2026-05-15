@@ -1,16 +1,19 @@
 # Anonymous Case Study
 
-A project used one AI agent for architecture and task design, and another AI agent for implementation. The first iterations moved quickly, but three failure modes appeared:
+A project used one AI agent for planning and another for execution. The first iterations moved quickly, but four failure modes appeared:
 
-1. The implementer widened task scope inside a single round.
-2. Active plan/result docs were overwritten before both sides had aligned on the same phase.
-3. Git ownership was unclear, so review and commit responsibility drifted.
+1. The executor widened task scope inside a single round.
+2. One-off human overrides were mistaken for permanent workflow changes.
+3. Useful long-term context kept bloating active prompts because there was no place for role-private memory.
+4. Git responsibility drifted between agents.
 
 The workflow was tightened with four changes:
 
-- Every implementation round became one small independently verifiable increment.
-- Plans had to name allowed files, per-file tasks, non-goals, and acceptance criteria.
-- The implementer had to stop and raise a question before touching plan-external files.
-- Completed phases were archived before active docs were reset.
+- Human authority was made explicit, with current-round overrides separated from permanent rule changes.
+- Every execution round became one small independently verifiable increment.
+- Every formal round preserved one plan and one result in numbered history files.
+- Each role received a private rolling memo that was not treated as a handoff contract.
 
-The result was slower individual rounds but faster debugging, cleaner review, and much easier recovery when a change went wrong.
+The result was slower individual rounds but cleaner delegation, easier recovery, and much less ambiguity about what counted as the formal collaboration record.
+
+The final setup separated reusable behavior from project shape: the skill explains when and how to use the workflow, while the GitHub repository keeps a canonical project template that agents copy for new projects.

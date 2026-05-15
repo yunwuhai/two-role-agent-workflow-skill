@@ -1,4 +1,4 @@
 interface:
   display_name: "Two-Role Agent Workflow"
-  short_description: "Set up planner/implementer collaboration workflows"
-  default_prompt: "Create a planner/implementer collaboration workflow with clear roles, handoff docs, small scoped tasks, and Git ownership."
+  short_description: "Create human-first planner/executor workflows"
+  default_prompt: "When creating a new project, ask whether to adopt the human-first planner/executor workflow. For projects that already use it, confirm whether I am the planner or executor before proceeding, then use project-level AGENTS.md guidance, role docs, plan/result handoffs, per-round history, private memos, small scoped tasks, and Git ownership. If I want this workflow to become a global default, point me to the optional global instruction templates instead of changing my environment without asking."

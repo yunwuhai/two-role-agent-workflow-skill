@@ -17,27 +17,34 @@
 ## 安全约定
 
 - 不提交真实密钥、令牌、私有数据或本地专用配置。
+- [填写项目特有的安全要求。]
 
 ## 双 Agent 协作概览
 
 - 人类 / 项目所有者拥有最高指令权与最终裁决权。
 - 默认角色为 `planner` 与 `executor`。
-- `planner` 默认负责需求澄清、方案设计、任务拆解、验收标准、治理文档和 Git。
+- `planner` 默认负责需求澄清、方案设计、任务拆解、验收标准、治理文档、对话生命周期和 Git。
 - `executor` 默认负责依据计划修改公共源码、运行测试并记录执行结果。
-- 若人类明确要求某一方越过默认边界，该方必须服从；该授权默认只覆盖当前轮次，不自动改写长期规则。
+- 若人类明确要求某一方越过默认边界，该方必须服从；该授权默认只覆盖当前回合，不自动改写长期规则。
 - 每次开始处理本项目时，Agent 必须先确认自己当前应作为 `planner` 还是 `executor`；若当前会话尚未明确，应先向人类询问，再继续后续工作。
-- 一旦本轮角色已经确认，后续普通执行型措辞不会自动切换角色。若当前角色是 `planner`，像“实现计划”“继续”“修改一下”这类请求默认应转化为计划、review 或给 `executor` 的交接，而不是直接修改公共源码。
-- `planner` 只有在收到面向当前轮次的明确越界授权时，才可直接修改公共源码；普通执行请求不构成授权。
+- 一旦本回合角色已经确认，后续普通执行型措辞不会自动切换角色。若当前角色是 `planner`，像“实现计划”“继续”“修改一下”这类请求默认应转化为计划、review 或给 `executor` 的交接，而不是直接修改公共源码。
+- `planner` 只有在收到面向当前回合的明确越界授权时，才可直接修改公共源码；普通执行请求不构成授权。
 - 详细角色规则见：
   - `docs/agents/planner.md`
   - `docs/agents/executor.md`
 
 ## 关键协作文档
 
-- 当前计划：`docs/planner/current_plan.md`
-- 当前结果：`docs/executor/current_result.md`
-- planner 备忘录：`docs/planner/memo.md`
-- executor 备忘录：`docs/executor/memo.md`
-- 历史记录：
-  - `docs/planner/history/`
-  - `docs/executor/history/`
+- 活跃对话与活跃文件表：`docs/conversations/active.md`
+- 每个对话目录：`docs/conversations/<id>-<slug>/`
+  - 当前计划：`plan.md`
+  - 当前结果：`result.md`
+  - 对话备忘录：`memo.md`
+  - 回合历史：`history/`
+
+## Git 规则
+
+- 默认由 `planner` 统一负责 review、整理和提交。
+- 当 `planner` 准备把某回合计划交给 `executor` 正式执行时，应先提交该计划；未提交计划只视为草稿。
+- 提交应保持小而可审阅。
+- 不提交大体积生成物、秘密信息或仅本地有效的文件。

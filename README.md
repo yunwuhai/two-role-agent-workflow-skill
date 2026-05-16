@@ -4,7 +4,7 @@
 
 `Two-Role Agent Workflow` is a lightweight collaboration protocol for projects where one agent plans and another executes.
 
-It is designed around a human-first rule: the human project owner has the highest authority and final decision power. The planner and executor follow clear default boundaries when no human override is present, but they must obey explicit human instructions for the current round.
+It is designed around a human-first rule: the human project owner has the highest authority and final decision power. The planner and executor follow clear default boundaries when no human override is present, but they must obey explicit human instructions for the current round. Once a role is confirmed for a round, ordinary execution requests do not silently switch that role; a planner may edit public source only after explicit current-round authorization.
 
 ### Default model
 
@@ -12,13 +12,14 @@ It is designed around a human-first rule: the human project owner has the highes
 - **Planner**: clarifies intent, writes plans, reviews results, maintains governance docs, and owns Git by default
 - **Executor**: changes public source according to the active plan, tests the result, and reports what happened
 
-### Five core concepts
+### Six core concepts
 
 1. **Human-first authority** — human instructions override default agent boundaries for the current round
-2. **Small Increment** — one independently verifiable increment per implementation round
-3. **Explicit Write Boundary** — every plan names allowed files, per-file tasks, non-goals, and acceptance criteria
-4. **Round History** — every formal round preserves one plan and one result in role-specific `history/`
-5. **Private Memo** — each role keeps its own rolling memo for long-lived context, but memos are not handoff contracts
+2. **Role Lock** — once confirmed, a role stays active for the round unless the human explicitly changes it
+3. **Small Increment** — one independently verifiable increment per implementation round
+4. **Explicit Write Boundary** — every plan names allowed files, per-file tasks, non-goals, and acceptance criteria
+5. **Round History** — every formal round preserves one plan and one result in role-specific `history/`
+6. **Private Memo** — each role keeps its own rolling memo for long-lived context, but memos are not handoff contracts
 
 ### Canonical template source
 
@@ -74,7 +75,7 @@ Avoid it for tiny one-off tasks, single-agent work, or projects where every part
 
 `Two-Role Agent Workflow` 是一套轻量协作协议，适用于一个 agent 负责计划、另一个 agent 负责执行的项目。
 
-它以“人类优先”为核心原则：项目所有者拥有最高指令权与最终裁决权。若没有人类明确授权，计划者和执行者都应遵守默认边界；若人类明确要求某一方越过边界，则该方必须服从当前轮次的授权。
+它以“人类优先”为核心原则：项目所有者拥有最高指令权与最终裁决权。若没有人类明确授权，计划者和执行者都应遵守默认边界；若人类明确要求某一方越过边界，则该方必须服从当前轮次的授权。一旦本轮角色已经确认，普通执行请求不会静默切换该角色；planner 只有在收到当前轮次的明确授权后，才可直接修改公共源码。
 
 ### 默认模型
 
@@ -82,13 +83,14 @@ Avoid it for tiny one-off tasks, single-agent work, or projects where every part
 - **Planner**：澄清目标、编写计划、验收结果、维护治理文档，默认负责 Git
 - **Executor**：依据当前计划修改公共源码、运行测试、记录执行结果
 
-### 五个核心概念
+### 六个核心概念
 
 1. **Human-first Authority**：人类指令在当前轮次内高于默认 agent 边界
-2. **Small Increment**：每轮只交付一个可独立验证的小增量
-3. **Explicit Write Boundary**：每份计划都写明允许修改文件、各文件任务、非目标和验收标准
-4. **Round History**：每个正式轮次都分别保存一份 plan 与 result 到各自 `history/`
-5. **Private Memo**：每个角色都有自己的滚动备忘录，但 memo 不是交接契约
+2. **Role Lock**：角色一经确认，本轮默认保持，除非人类明确改变
+3. **Small Increment**：每轮只交付一个可独立验证的小增量
+4. **Explicit Write Boundary**：每份计划都写明允许修改文件、各文件任务、非目标和验收标准
+5. **Round History**：每个正式轮次都分别保存一份 plan 与 result 到各自 `history/`
+6. **Private Memo**：每个角色都有自己的滚动备忘录，但 memo 不是交接契约
 
 ### 标准模板来源
 

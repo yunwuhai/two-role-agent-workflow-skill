@@ -13,16 +13,19 @@ Use this skill to create or refine a human-first workflow where one side plans a
    - When the user asks to create a new project, first ask whether they want to use this planner/executor workflow before scaffolding project governance docs.
    - If the user declines, do not impose this workflow.
    - If the user confirms, create the workflow structure as part of project initialization.
-2. Confirm the active role before working in workflow projects.
+2. Confirm and lock the active role before working in workflow projects.
    - When entering a project that already uses this format, ask whether the current agent should act as **planner** or **executor** before doing substantive work.
    - Do not infer the role from convenience when the user has not already made it explicit in the current session or project instructions.
+   - After the role is confirmed, keep acting in that role for the rest of the round unless the human explicitly changes it. Ordinary execution phrasing such as `implement this`, `continue`, or `fix it` does not implicitly switch roles.
    - After the role is confirmed, read the matching role document before proceeding.
 3. Confirm the intended roles for setup.
    - Default to **planner** and **executor** if the user has not named roles.
    - Ask only when the answer changes ownership, write boundaries, or Git responsibility.
-4. Make authority explicit.
+4. Make authority and override semantics explicit.
    - The human project owner has the highest instruction authority and final decision power.
    - Planner and executor must follow their default boundaries when no explicit human override exists.
+   - For a planner, ordinary execution requests such as `implement the plan`, `continue`, `modify this`, or equivalent wording are not explicit authorization to edit public source.
+   - A planner may cross the default boundary only when the human clearly authorizes that exception for the current round, such as `this round, planner may edit source directly` or equivalent unambiguous wording.
    - An explicit human override applies to the current round by default; do not treat it as a permanent rule change unless the human says so.
 5. Decide whether the workflow fits.
    - Use it for sustained projects with repeated handoffs, meaningful design decisions, or separate planning and execution roles.
@@ -40,9 +43,10 @@ Use this skill to create or refine a human-first workflow where one side plans a
 8. Make tasks deliberately small.
    - Each execution round should deliver one independently verifiable increment.
    - Every plan must state allowed files, per-file work, explicit non-goals, and acceptance criteria.
-9. Protect boundaries.
+9. Protect boundaries with a pre-mutation gate.
    - Planner owns planning docs, governance docs, review, and Git unless the user chooses otherwise.
    - Executor owns public source changes plus its own result doc.
+   - Before a planner writes any public source, it must verify the active role and confirm that the human gave an explicit current-round override; if not, it must stop and convert the request into a plan, review, or executor handoff instead of executing.
    - If the executor needs plan-external files, interfaces, or decisions, it must stop and ask the human before continuing.
 10. Preserve round history.
    - Save one formal plan per round under `docs/planner/history/`.
@@ -163,7 +167,7 @@ Adapt names and paths to the actual project before writing.
 - Prefer one planner and one executor over vague multi-agent sprawl.
 - Prefer fewer, clearer rules over large governance documents.
 - Do not let the executor silently widen scope.
-- Do not let the planner directly implement public source unless the human explicitly asks for that round.
+- Do not let the planner directly implement public source unless the human explicitly authorizes that exact exception for the current round. Ordinary execution requests are not authorization.
 - Do not let a one-round human override silently become a permanent rule.
 - Keep formal handoff docs separate from private memos.
 - Assign Git ownership to exactly one side unless the user explicitly asks otherwise.

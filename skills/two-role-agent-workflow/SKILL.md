@@ -1,6 +1,6 @@
 ---
 name: two-role-agent-workflow
-description: Use when creating a new project, deciding whether a project should adopt a human-first planner/executor workflow, or maintaining projects that already use one. Ask whether to scaffold new projects with this workflow, confirm whether the current agent is acting as planner or executor before working in this format, and use a project-level AGENTS.md entrypoint, role docs, conversation-scoped plan/result handoffs, shared active-conversation and active-file tracking, per-turn history, conversation memos, small scoped tasks, and clear Git ownership.
+description: Use when creating a new project, deciding whether a project should adopt a human-first planner/executor workflow, or maintaining projects that already use one. Ask whether to scaffold new projects with this workflow, confirm whether the current agent is acting as planner or executor before working in this format, and use a project-level AGENTS.md entrypoint, role docs, conversation-scoped plan/result handoffs, shared conversation status tracking, per-turn history, conversation memos, small scoped tasks, and clear Git ownership.
 ---
 
 # Two-Role Agent Workflow
@@ -37,18 +37,20 @@ Use this skill to create or refine a human-first workflow where one side plans a
 7. Create the minimum collaboration surface.
    - Root `AGENTS.md` as the project-level agent entrypoint
    - Role docs under `docs/agents/`
-   - One `docs/conversations/active.md` registry for active conversations and active file ownership
+   - One `docs/conversations/status.json` registry for open conversations and their runtime file locks
    - One folder per active conversation, each with `plan.md`, `result.md`, `memo.md`, and `history/`
 8. Make tasks deliberately small.
    - Each execution turn should deliver one independently verifiable increment.
    - Every plan must state allowed files, per-file work, explicit non-goals, and acceptance criteria.
+   - The allowed-file list should be as complete as reasonably possible because the planner uses it for conflict prediction.
 9. Protect boundaries with a pre-mutation gate.
    - Planner owns planning docs, governance docs, review, Git, and conversation lifecycle unless the user chooses otherwise.
    - Executor owns public source changes plus the active conversation's `result.md`.
-   - Before writing a new plan, the planner must check the active file registry and avoid creating an immediately blocked execution plan when the plan's core files are already owned by another active conversation.
+   - Before writing a new plan, the planner must check `docs/conversations/status.json` against the plan's expected write set and avoid creating an immediately blocked execution plan when the core files are already locked by another open conversation.
    - Before a planner writes any public source, it must verify the active role and confirm that the human gave an explicit current-turn override; if not, it must stop and convert the request into a plan, review, or executor handoff instead of executing.
-   - Before an executor first modifies a file, it must verify that the file is allowed by the plan and not already owned by another active conversation; if free, register it to the current conversation first.
-   - If an executor needs plan-external files, interfaces, decisions, or a file already owned by another active conversation, it must stop and ask the human before continuing.
+   - File locks restrict writes only; read-only inspection remains allowed across conversations.
+   - Before an executor first modifies a file, it must verify that the file is allowed by the plan and not already locked by another open conversation; if free, add it to the current conversation's `locked_files` first.
+   - If an executor needs plan-external files, interfaces, decisions, or a file already locked by another open conversation, it must stop, mark the conversation `blocked`, and ask the human before continuing.
 10. Preserve conversation history.
    - A conversation may span multiple turns.
    - After reviewing each executor result, the planner saves one turn summary under that conversation's `history/` directory.
@@ -58,7 +60,8 @@ Use this skill to create or refine a human-first workflow where one side plans a
    - Memo content is not a substitute for formal plan, result, or history.
    - If memo content becomes necessary for execution or review, promote it into the formal documents.
 12. Close conversations explicitly.
-   - When the planner judges a conversation complete, write a final summary, remove it from the active conversation registry, and release every file it owns in the active file registry.
+   - The planner may release an unneeded file lock before conversation closure, but only after making a Git commit and recording the release in the latest turn summary.
+   - When the planner judges a conversation complete, mark the last turn summary as final and remove that conversation object from `status.json`; the conversation directory remains as long-term history.
 
 ## Minimal Initialization
 
@@ -87,7 +90,7 @@ docs/
     planner.md
     executor.md
   conversations/
-    active.md
+    status.json
     0001-login-page/
       plan.md
       result.md
@@ -102,7 +105,7 @@ If the user already uses named agents such as `codex` and `opencode`, adapt role
 - Root `AGENTS.md`: project-level overview, commands, conventions, safety, collaboration summary, and links to detailed docs.
 - `docs/agents/planner.md`: planner responsibilities, boundaries, planning quality, conversation lifecycle, history, and memo rules.
 - `docs/agents/executor.md`: executor responsibilities, boundaries, stop conditions, active-file registration, result reporting, and memo rules.
-- `docs/conversations/active.md`: the active conversation registry plus the active file registry.
+- `docs/conversations/status.json`: the machine-readable registry of open conversations, their `active` / `blocked` state, and their current `locked_files`.
 - `docs/conversations/<id>-<slug>/`: conversation-scoped work products rather than role instructions.
 
 ## Five Core Concepts
@@ -111,7 +114,7 @@ If the user already uses named agents such as `codex` and `opencode`, adapt role
 - **Small Increment**: each execution turn ships one independently verifiable change.
 - **Explicit Write Boundary**: each plan names the files that may change.
 - **Conversation-scoped Handoff**: plan, result, memo, and history live with the conversation they describe.
-- **Active File Ownership**: active conversations may run in parallel, but a file may be modified by only one active conversation at a time.
+- **Runtime File Lock**: open conversations may run in parallel, but a file may be written by only one open conversation at a time.
 
 ## Required Plan Fields
 
@@ -164,7 +167,7 @@ Use the bundled `assets/` only when a remote template cannot be fetched or when 
 - `root-agents-template.md`
 - `planner-role-template.md`
 - `executor-role-template.md`
-- `active-conversations-template.md`
+- `status-template.json`
 - `plan-template.md`
 - `result-template.md`
 - `memo-template.md`
@@ -181,7 +184,7 @@ Adapt names and paths to the actual project before writing.
 - Prefer one planner and one executor over vague multi-agent sprawl.
 - Prefer fewer, clearer rules over large governance documents.
 - Do not let the executor silently widen scope.
-- Do not let the planner create immediately blocked execution plans when active file ownership already makes the conflict obvious.
+- Do not let the planner create immediately blocked execution plans when existing file locks already make the conflict obvious.
 - Do not let the planner directly implement public source unless the human explicitly authorizes that exact exception for the current turn. Ordinary execution requests are not authorization.
 - Do not let a one-turn human override silently become a permanent rule.
 - Keep formal handoff docs separate from informal memo content.

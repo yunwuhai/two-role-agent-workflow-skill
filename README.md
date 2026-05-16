@@ -19,7 +19,13 @@ It is designed around a human-first rule: the human project owner has the highes
 3. **Small Increment** — one independently verifiable increment per execution turn
 4. **Explicit Write Boundary** — every plan names allowed files, per-file tasks, non-goals, and acceptance criteria
 5. **Conversation-scoped Handoff** — each conversation keeps its own plan, result, memo, and per-turn history
-6. **Active File Ownership** — multiple conversations may stay active in parallel, but one file may be modified by only one active conversation at a time
+6. **Runtime File Lock** — multiple conversations may stay open in parallel, but one file may be written by only one open conversation at a time
+
+### Why this exists
+
+This workflow came out of five recurring failures in a planner/executor setup: executors widened scope inside a turn, one-off human overrides were mistaken for permanent rules, useful memory kept bloating active prompts, Git ownership drifted, and planners sometimes treated ordinary execution requests as permission to edit source directly.
+
+The design responds by making authority explicit, keeping turns small, grouping related work into conversations, preserving conversation-local memory and history, using runtime file locks for parallel work, and requiring explicit current-turn authorization before a planner edits public source.
 
 ### Canonical template source
 
@@ -44,7 +50,7 @@ docs/
     planner.md
     executor.md
   conversations/
-    active.md
+    status.json
     0001-first-conversation/
       plan.md
       result.md
@@ -54,7 +60,7 @@ docs/
 
 - Root `AGENTS.md`: project-level agent entrypoint for setup, conventions, safety, and collaboration overview
 - `docs/agents/*.md`: role-specific working agreements
-- `docs/conversations/active.md`: shared registry for active conversations and active file ownership
+- `docs/conversations/status.json`: shared registry for open conversations and runtime file locks
 - `docs/conversations/<id>-<slug>/`: current work surfaces, conversation memo, and per-turn history for one problem domain
 
 ### Repository layout
@@ -62,7 +68,6 @@ docs/
 ```text
 skills/two-role-agent-workflow/    # Codex skill implementation
 templates/basic-project/           # Canonical empty project template
-examples/filled-round/             # Worked example with one active conversation and one completed turn
 ```
 
 ### When to use it
@@ -90,7 +95,13 @@ Avoid it for tiny one-off tasks, single-agent work, or projects where every part
 3. **Small Increment**：每回合只交付一个可独立验证的小增量
 4. **Explicit Write Boundary**：每份计划都写明允许修改文件、各文件任务、非目标和验收标准
 5. **Conversation-scoped Handoff**：每个对话都维护自己的 plan、result、memo 与逐回合 history
-6. **Active File Ownership**：多个对话可以并行保持活跃，但同一文件同时只能被一个活跃对话修改
+6. **Runtime File Lock**：多个对话可以并行保持开启，但同一文件同时只能被一个开启对话写入
+
+### 为什么需要它
+
+这套工作流来自五类反复出现的问题：executor 会在单个回合内顺手扩大范围、一次性的人类授权会被误当成长期规则、长期上下文不断挤进活跃提示、Git 责任在双方之间漂移，以及 planner 有时会把普通执行请求误解成直接修改源码的授权。
+
+因此，这套设计明确了人类权威、把每回合收窄成小增量、按 conversation 聚合同类工作、保留 conversation 级 memo 与 history、用运行时文件锁支持并行，并要求 planner 只有在当前回合收到明确授权后才能直接修改公共源码。
 
 ### 标准模板来源
 
@@ -115,7 +126,7 @@ docs/
     planner.md
     executor.md
   conversations/
-    active.md
+    status.json
     0001-first-conversation/
       plan.md
       result.md
@@ -125,7 +136,7 @@ docs/
 
 - 根目录 `AGENTS.md`：项目级 agent 总入口，放项目说明、命令、规范、安全与协作概览
 - `docs/agents/*.md`：角色级工作协议
-- `docs/conversations/active.md`：活跃对话与活跃文件的共享登记表
+- `docs/conversations/status.json`：开启对话及其运行时文件锁的共享登记表
 - `docs/conversations/<id>-<slug>/`：某一问题域的当前工作面板、对话 memo 与逐回合历史
 
 ### 仓库结构
@@ -133,7 +144,6 @@ docs/
 ```text
 skills/two-role-agent-workflow/    # Codex skill 实现
 templates/basic-project/           # 标准空白项目模板
-examples/filled-round/             # 含一个活跃对话与一个已完成回合的示例
 ```
 
 ### 何时使用

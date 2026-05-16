@@ -35,7 +35,7 @@
 
 ## 关键协作文档
 
-- 活跃对话与活跃文件表：`docs/conversations/active.md`
+- 对话状态表：`docs/conversations/status.json`
 - 每个对话目录：`docs/conversations/<id>-<slug>/`
   - 当前计划：`plan.md`
   - 当前结果：`result.md`

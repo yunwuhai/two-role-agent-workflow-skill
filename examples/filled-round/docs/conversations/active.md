@@ -4,11 +4,13 @@
 
 | 对话 | 主题 | 状态 | 最近更新 |
 | --- | --- | --- | --- |
-| `0001-add-button-submit` | 让 TodoInput 支持按钮提交 | 活跃 | 2026-05-16 |
+| `0002-enter-submit` | 为待办输入框增加 Enter 提交 | 执行中 | 2026-05-16 |
 
 ## 活跃文件表
 
 | 文件 | 占用对话 | 首次登记时间 | 备注 |
 | --- | --- | --- | --- |
-| `src/components/TodoInput.tsx` | `0001-add-button-submit` | 2026-05-16 | 当前对话需要修改组件行为 |
-| `src/components/TodoInput.test.tsx` | `0001-add-button-submit` | 2026-05-16 | 当前对话需要补测试 |
+| `src/TodoInput.tsx` | `0002-enter-submit` | 2026-05-16 | 当前回合实现键盘提交 |
+| `src/TodoInput.test.tsx` | `0002-enter-submit` | 2026-05-16 | 当前回合补测试 |
+
+> `0001-add-button-submit` 已完成并关闭，因此它既不再出现在活跃对话表中，也不再持有任何文件。

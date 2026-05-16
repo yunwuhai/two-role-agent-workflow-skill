@@ -4,38 +4,28 @@
 
 `Two-Role Agent Workflow` is a lightweight collaboration protocol for projects where one agent plans and another executes.
 
-It is designed around a human-first rule: the human project owner has the highest authority and final decision power. The planner and executor follow clear default boundaries when no human override is present, but they must obey explicit human instructions for the current turn. Once a role is confirmed for a turn, ordinary execution requests do not silently switch that role; a planner may edit public source only after explicit current-turn authorization.
+Use it when a project needs repeated handoffs, meaningful design decisions, or clear separation between planning and implementation. It is intentionally small: one human owner, one planner, one executor, and just enough structure to keep delegation explicit without turning the project into process theater.
+
+The model is human-first. The human project owner has the highest authority and final decision power. Planner and executor follow clear default boundaries when no human override is present, and a role stays active for the current turn unless the human explicitly changes it. Ordinary execution requests do not silently turn a planner into an executor; a planner may edit project source only after explicit current-turn authorization.
 
 ### Default model
 
 - **Human owner**: highest authority and final decision maker
-- **Planner**: clarifies intent, writes plans, reviews results, manages conversation lifecycle, maintains governance docs, and owns Git by default
-- **Executor**: changes public source according to the active plan, tests the result, and reports what happened
+- **Planner**: clarifies intent, writes plans, reviews results, maintains governance docs, manages conversation lifecycle, and owns Git by default
+- **Executor**: changes project source according to the active plan, tests the result, and reports what happened
 
 ### Six core concepts
 
-1. **Human-first authority** — human instructions override default agent boundaries for the current turn
+1. **Human-first authority** — explicit human instructions override default agent boundaries for the current turn
 2. **Role Lock** — once confirmed, a role stays active for the turn unless the human explicitly changes it
 3. **Small Increment** — one independently verifiable increment per execution turn
 4. **Explicit Write Boundary** — every plan names allowed files, per-file tasks, non-goals, and acceptance criteria
-5. **Conversation-scoped Handoff** — each conversation keeps its own plan, result, memo, and per-turn history
-6. **Active File Ownership** — multiple conversations may stay active in parallel, but one file may be modified by only one active conversation at a time
+5. **Conversation-scoped Handoff** — each conversation keeps its own plan, result, memo, and history
+6. **Active File Ownership** — parallel conversations may coexist, but one file belongs to only one active conversation at a time
 
-### Canonical template source
+A conversation may span multiple turns. `plan.md` and `result.md` describe the current turn, while `history/` preserves how that conversation evolved over time.
 
-The source of truth for new workflow projects is the GitHub repository template at `templates/basic-project/`. Skills should prefer copying that template from the repository, and use bundled assets only as an offline fallback.
-
-### Optional global defaults
-
-The core workflow does **not** require any global configuration. If you want future new-project requests to proactively ask whether they should use this planner/executor workflow, optional global instruction templates are available:
-
-- `templates/global-instructions/codex-AGENTS.md` — for a parent-directory `AGENTS.md` that Codex can inherit
-- `templates/global-instructions/opencode-AGENTS.md` — for `~/.config/opencode/AGENTS.md`
-- `templates/global-instructions/generic-AGENTS.md` — for other tools that support comparable global or inherited instructions
-
-These files are optional personal defaults, not part of the project template. The skill should mention them when a user wants this workflow to become a default preference, but it should not install or modify global instructions unless the user explicitly asks.
-
-### Recommended default structure
+### Recommended structure
 
 ```text
 AGENTS.md
@@ -45,43 +35,57 @@ docs/
     executor.md
   conversations/
     active.md
-    0001-first-conversation/
+    0001-login-page/
       plan.md
       result.md
       memo.md
       history/
 ```
 
-- Root `AGENTS.md`: project-level agent entrypoint for setup, conventions, safety, and collaboration overview
+- Root `AGENTS.md`: project-level entrypoint for setup, conventions, safety, and collaboration overview
 - `docs/agents/*.md`: role-specific working agreements
-- `docs/conversations/active.md`: shared registry for active conversations and active file ownership
-- `docs/conversations/<id>-<slug>/`: current work surfaces, conversation memo, and per-turn history for one problem domain
+- `docs/conversations/active.md`: active conversation registry plus active file ownership registry
+- `docs/conversations/<id>-<slug>/`: conversation-scoped handoff documents and turn history
+
+### Canonical template source
+
+The source of truth for new workflow projects is the GitHub repository template at `templates/basic-project/`. Skills should prefer copying that template from the repository and use bundled assets only as an offline fallback.
 
 ### Repository layout
 
 ```text
 skills/two-role-agent-workflow/    # Codex skill implementation
 templates/basic-project/           # Canonical empty project template
-examples/filled-round/             # Worked example with one active conversation and one completed turn
+examples/filled-round/             # Worked example with one closed conversation and one active conversation
 ```
 
-### When to use it
+### Optional global defaults
 
-Use it for sustained projects with repeated handoffs, meaningful design decisions, or separate planning and execution roles.
+The core workflow does **not** require any global configuration. If you want future new-project requests to proactively ask whether they should use this planner/executor workflow, optional global instruction templates are available:
 
-Avoid it for tiny one-off tasks, single-agent work, or projects where every participant must freely edit the same files in every turn.
+- `templates/global-instructions/codex-AGENTS.md` — for a parent-directory `AGENTS.md` that Codex can inherit
+- `templates/global-instructions/opencode-AGENTS.md` — for `~/.config/opencode/AGENTS.md`
+- `templates/global-instructions/generic-AGENTS.md` — for other tools that support comparable global or inherited instructions
+
+These files are optional personal defaults, not part of the project template. The skill may mention them when a user wants this workflow to become a default preference, but it should not install or modify global instructions unless the user explicitly asks.
+
+### When not to use it
+
+Avoid this workflow for tiny one-off tasks, single-agent work, or projects where every participant must freely edit the same files in every turn.
 
 ## 中文
 
 `Two-Role Agent Workflow` 是一套轻量协作协议，适用于一个 agent 负责计划、另一个 agent 负责执行的项目。
 
-它以“人类优先”为核心原则：项目所有者拥有最高指令权与最终裁决权。若没有人类明确授权，计划者和执行者都应遵守默认边界；若人类明确要求某一方越过边界，则该方必须服从当前回合的授权。一旦本回合角色已经确认，普通执行请求不会静默切换该角色；planner 只有在收到当前回合的明确授权后，才可直接修改公共源码。
+当项目需要反复交接、存在真实设计决策，或希望把“先想清楚”和“再动手做”分开时，它会比较合适。它刻意保持很小：一个人类所有者、一个 planner、一个 executor，再加上刚好足够的结构，让协作更清楚，而不是更繁琐。
+
+这套模型以“人类优先”为核心。项目所有者拥有最高指令权与最终裁决权。若没有人类明确授权，planner 与 executor 都遵守默认边界；角色一旦在当前回合确认，除非人类明确改变，否则不会自动切换。普通执行请求不会把 planner 静默变成 executor；planner 只有在收到当前回合的明确授权后，才可直接修改项目源码。
 
 ### 默认模型
 
 - **人类所有者**：拥有最高指令权与最终裁决权
-- **Planner**：澄清目标、编写计划、验收结果、管理对话生命周期、维护治理文档，默认负责 Git
-- **Executor**：依据当前计划修改公共源码、运行测试、记录执行结果
+- **Planner**：澄清目标、编写计划、验收结果、维护治理文档、管理对话生命周期，默认负责 Git
+- **Executor**：依据当前计划修改项目源码、运行测试、记录执行结果
 
 ### 六个核心概念
 
@@ -89,12 +93,44 @@ Avoid it for tiny one-off tasks, single-agent work, or projects where every part
 2. **Role Lock**：角色一经确认，本回合默认保持，除非人类明确改变
 3. **Small Increment**：每回合只交付一个可独立验证的小增量
 4. **Explicit Write Boundary**：每份计划都写明允许修改文件、各文件任务、非目标和验收标准
-5. **Conversation-scoped Handoff**：每个对话都维护自己的 plan、result、memo 与逐回合 history
-6. **Active File Ownership**：多个对话可以并行保持活跃，但同一文件同时只能被一个活跃对话修改
+5. **Conversation-scoped Handoff**：plan、result、memo 与 history 都归属于各自对话
+6. **Active File Ownership**：可并行存在多个活跃对话，但同一文件同一时间只归属于一个活跃对话
+
+一个对话可以跨越多个回合。`plan.md` 与 `result.md` 描述当前回合，`history/` 负责沉淀这个对话随时间的演进。
+
+### 推荐结构
+
+```text
+AGENTS.md
+docs/
+  agents/
+    planner.md
+    executor.md
+  conversations/
+    active.md
+    0001-login-page/
+      plan.md
+      result.md
+      memo.md
+      history/
+```
+
+- 根目录 `AGENTS.md`：项目级总入口，放项目说明、命令、规范、安全与协作概览
+- `docs/agents/*.md`：角色级工作协议
+- `docs/conversations/active.md`：活跃对话登记表与活跃文件占用表
+- `docs/conversations/<id>-<slug>/`：按对话归档的正式交接文档与回合历史
 
 ### 标准模板来源
 
 新项目的事实来源是 GitHub 仓库中的 `templates/basic-project/`。skill 应优先复制仓库模板，只有在无法访问远程模板时才退回内置 assets。
+
+### 仓库结构
+
+```text
+skills/two-role-agent-workflow/    # Codex skill 实现
+templates/basic-project/           # 标准空白项目模板
+examples/filled-round/             # 含一个已关闭对话与一个活跃对话的示例
+```
 
 ### 可选全局默认规则
 
@@ -106,39 +142,7 @@ Avoid it for tiny one-off tasks, single-agent work, or projects where every part
 
 这些文件只是可选的个人默认偏好，不属于项目模板本体。skill 可以在用户希望把该工作流设为默认偏好时提示它们，但除非用户明确要求，否则不应自动安装或修改任何全局指令。
 
-### 推荐默认结构
-
-```text
-AGENTS.md
-docs/
-  agents/
-    planner.md
-    executor.md
-  conversations/
-    active.md
-    0001-first-conversation/
-      plan.md
-      result.md
-      memo.md
-      history/
-```
-
-- 根目录 `AGENTS.md`：项目级 agent 总入口，放项目说明、命令、规范、安全与协作概览
-- `docs/agents/*.md`：角色级工作协议
-- `docs/conversations/active.md`：活跃对话与活跃文件的共享登记表
-- `docs/conversations/<id>-<slug>/`：某一问题域的当前工作面板、对话 memo 与逐回合历史
-
-### 仓库结构
-
-```text
-skills/two-role-agent-workflow/    # Codex skill 实现
-templates/basic-project/           # 标准空白项目模板
-examples/filled-round/             # 含一个活跃对话与一个已完成回合的示例
-```
-
-### 何时使用
-
-适合长期项目、反复交接、存在明确计划 / 执行分工的场景。
+### 何时不适合使用
 
 不适合一次性小任务、单 agent 工作流，或所有参与者都必须频繁改同一批文件的项目。
 

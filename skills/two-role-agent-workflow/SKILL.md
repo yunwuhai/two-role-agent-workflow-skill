@@ -9,74 +9,62 @@ Use this skill to create or refine a human-first workflow where one side plans a
 
 ## Workflow
 
-1. Handle new-project creation explicitly.
-   - When the user asks to create a new project, first ask whether they want to use this planner/executor workflow before scaffolding project governance docs.
-   - If the user declines, do not impose this workflow.
-   - If the user confirms, create the workflow structure as part of project initialization.
-2. Confirm and lock the active role before working in workflow projects.
-   - When entering a project that already uses this format, ask whether the current agent should act as **planner** or **executor** before doing substantive work.
-   - Do not infer the role from convenience when the user has not already made it explicit in the current session or project instructions.
-   - After the role is confirmed, keep acting in that role for the rest of the turn unless the human explicitly changes it. Ordinary execution phrasing such as `implement this`, `continue`, or `fix it` does not implicitly switch roles.
-   - After the role is confirmed, read the matching role document before proceeding.
-3. Confirm the intended roles for setup.
-   - Default to **planner** and **executor** if the user has not named roles.
-   - Ask only when the answer changes ownership, write boundaries, or Git responsibility.
-4. Make authority and override semantics explicit.
-   - The human project owner has the highest instruction authority and final decision power.
-   - Planner and executor must follow their default boundaries when no explicit human override exists.
-   - For a planner, ordinary execution requests such as `implement the plan`, `continue`, `modify this`, or equivalent wording are not explicit authorization to edit public source.
-   - A planner may cross the default boundary only when the human clearly authorizes that exception for the current turn, such as `this turn, planner may edit source directly` or equivalent unambiguous wording.
-   - An explicit human override applies to the current turn by default; do not treat it as a permanent rule change unless the human says so.
-5. Decide whether the workflow fits.
+1. Decide whether the workflow fits.
    - Use it for sustained projects with repeated handoffs, meaningful design decisions, or separate planning and execution roles.
    - Do not impose it on tiny one-off tasks, single-agent work, or projects where both roles must freely edit the same files every turn.
-6. Prefer the canonical GitHub template when scaffolding.
-   - Treat `https://github.com/yunwuhai/two-role-agent-workflow-skill/tree/main/templates/basic-project` as the canonical project template source.
-   - When network access is available, copy the repository template instead of rebuilding the structure from memory.
-   - Use bundled `assets/` only as an offline fallback or when the user explicitly requests local-only scaffolding.
-7. Create the minimum collaboration surface.
-   - Root `AGENTS.md` as the project-level agent entrypoint
+2. Handle setup explicitly.
+   - For new projects, ask whether the user wants this workflow before scaffolding governance docs.
+   - Default to **planner** and **executor** unless different roles change ownership, write boundaries, or Git responsibility.
+   - Choose one Git owner.
+   - Prefer the canonical GitHub template at `templates/basic-project/`; use bundled `assets/` only as an offline fallback or when the user explicitly requests local-only scaffolding.
+3. Confirm and lock the active role.
+   - In projects that already use this format, ask whether the current agent should act as **planner** or **executor** before substantive work unless the role is already explicit.
+   - After confirmation, keep acting in that role for the rest of the turn unless the human explicitly changes it.
+   - Ordinary execution phrasing such as `implement this`, `continue`, or `fix it` does not implicitly switch a planner into executor work.
+   - Read the matching role document before proceeding.
+4. Preserve human authority.
+   - The human project owner has the highest instruction authority and final decision power.
+   - Default boundaries apply when no explicit human override exists.
+   - A planner may edit project source only when the human clearly authorizes that exception for the current turn.
+   - A one-turn override does not become a permanent rule unless the human says so.
+5. Create the minimum collaboration surface.
+   - Root `AGENTS.md`
    - Role docs under `docs/agents/`
    - One `docs/conversations/active.md` registry for active conversations and active file ownership
    - One folder per active conversation, each with `plan.md`, `result.md`, `memo.md`, and `history/`
-8. Make tasks deliberately small.
-   - Each execution turn should deliver one independently verifiable increment.
+6. Keep the unit of work small.
+   - A **conversation** is a sustained topic that may span multiple turns.
+   - A **turn** is one independently verifiable execution increment inside that conversation.
+   - `plan.md` and `result.md` describe the current turn; `history/` preserves the conversation over time.
    - Every plan must state allowed files, per-file work, explicit non-goals, and acceptance criteria.
-9. Protect boundaries with a pre-mutation gate.
+7. Protect boundaries before mutation.
    - Planner owns planning docs, governance docs, review, Git, and conversation lifecycle unless the user chooses otherwise.
-   - Executor owns public source changes plus the active conversation's `result.md`.
-   - Before writing a new plan, the planner must check the active file registry and avoid creating an immediately blocked execution plan when the plan's core files are already owned by another active conversation.
-   - Before a planner writes any public source, it must verify the active role and confirm that the human gave an explicit current-turn override; if not, it must stop and convert the request into a plan, review, or executor handoff instead of executing.
-   - Before an executor first modifies a file, it must verify that the file is allowed by the plan and not already owned by another active conversation; if free, register it to the current conversation first.
-   - If an executor needs plan-external files, interfaces, decisions, or a file already owned by another active conversation, it must stop and ask the human before continuing.
-10. Preserve conversation history.
-   - A conversation may span multiple turns.
-   - After reviewing each executor result, the planner saves one turn summary under that conversation's `history/` directory.
-   - Each summary must record what was planned, what was done, what resulted, and what remains.
-11. Keep memory conversation-scoped.
+   - Before writing a new plan, the planner must check the active file registry and avoid creating an immediately blocked plan when core files are already owned elsewhere.
+   - Executor owns project source changes plus the active conversation's `result.md`.
+   - Before first modifying a file, the executor must verify that the file is allowed by the plan and not already owned by another active conversation; if free, register it first.
+   - If the executor needs plan-external files, interfaces, decisions, or a file already owned elsewhere, it must stop and ask the human before continuing.
+8. Preserve memory and close conversations cleanly.
    - Each conversation may maintain one shared rolling `memo.md` for cross-turn context compression.
-   - Memo content is not a substitute for formal plan, result, or history.
-   - If memo content becomes necessary for execution or review, promote it into the formal documents.
-12. Close conversations explicitly.
-   - When the planner judges a conversation complete, write a final summary, remove it from the active conversation registry, and release every file it owns in the active file registry.
+   - Memo content is not a substitute for formal plan, result, or history; promote it when it becomes necessary for execution or review.
+   - After reviewing each executor result, the planner saves one turn summary under that conversation's `history/` directory.
+   - When the planner judges a conversation complete, write a final summary, remove it from the active conversation registry, and release every file it owns.
 
 ## Minimal Initialization
 
 For a new project:
 
 1. Ask whether the user wants this workflow before scaffolding it.
-2. If confirmed, choose the two role names.
-3. Choose one Git owner.
-4. Copy the canonical template from `templates/basic-project/` in the GitHub repository when available; use bundled assets only as fallback.
-5. Fill project-specific goal, commands, conventions, and boundaries in root `AGENTS.md`.
-6. Start the first conversation with one small independently testable turn.
+2. If confirmed, choose the two role names and one Git owner.
+3. Copy the canonical template from `templates/basic-project/` when available; use bundled assets only as fallback.
+4. Fill project-specific goals, commands, conventions, and boundaries in root `AGENTS.md`.
+5. Start the first conversation with one small independently testable turn.
 
 For an existing project:
 
 1. Inspect current docs, source ownership, and Git habits first.
-2. Preserve existing useful conventions where possible.
+2. Preserve useful conventions where possible.
 3. Add only the missing collaboration docs.
-4. Move into the new workflow through one small pilot conversation before broad rollout.
+4. Move into the workflow through one small pilot conversation before broad rollout.
 
 ## Default Structure
 
@@ -97,25 +85,17 @@ docs/
 
 If the user already uses named agents such as `codex` and `opencode`, adapt role labels while preserving the structure.
 
-## Document Responsibilities
+## Required Documents
 
-- Root `AGENTS.md`: project-level overview, commands, conventions, safety, collaboration summary, and links to detailed docs.
+- Root `AGENTS.md`: project overview, commands, conventions, safety, collaboration summary, and links to role docs.
 - `docs/agents/planner.md`: planner responsibilities, boundaries, planning quality, conversation lifecycle, history, and memo rules.
 - `docs/agents/executor.md`: executor responsibilities, boundaries, stop conditions, active-file registration, result reporting, and memo rules.
-- `docs/conversations/active.md`: the active conversation registry plus the active file registry.
+- `docs/conversations/active.md`: active conversation registry plus active file registry.
 - `docs/conversations/<id>-<slug>/`: conversation-scoped work products rather than role instructions.
 
-## Five Core Concepts
+## Required Fields
 
-- **Human-first Authority**: explicit human instructions override default agent boundaries for the current turn.
-- **Small Increment**: each execution turn ships one independently verifiable change.
-- **Explicit Write Boundary**: each plan names the files that may change.
-- **Conversation-scoped Handoff**: plan, result, memo, and history live with the conversation they describe.
-- **Active File Ownership**: active conversations may run in parallel, but a file may be modified by only one active conversation at a time.
-
-## Required Plan Fields
-
-Every active plan must include:
+Every active `plan.md` must include:
 
 - Goal
 - Background
@@ -126,17 +106,13 @@ Every active plan must include:
 - Acceptance criteria
 - Non-goals
 
-## Required Result Fields
-
-Every active result must include:
+Every active `result.md` must include:
 
 - Completed work
 - Modified files
 - Test results
 - Deviations from plan
 - Remaining issues
-
-## Required Turn Summary Fields
 
 Every planner-written turn summary must include:
 
@@ -174,15 +150,12 @@ Adapt names and paths to the actual project before writing.
 
 ## Quality Bar
 
-- When asked to create a new project, ask whether to adopt this workflow before generating its collaboration structure.
-- Prefer the canonical GitHub template for full scaffolds; do not hand-recreate the project format from memory when the repository template is available.
-- When entering a project that uses this workflow, confirm the active role before substantive work unless it is already explicit.
 - Keep root `AGENTS.md` useful for the whole project, not only the collaboration protocol.
 - Prefer one planner and one executor over vague multi-agent sprawl.
 - Prefer fewer, clearer rules over large governance documents.
 - Do not let the executor silently widen scope.
 - Do not let the planner create immediately blocked execution plans when active file ownership already makes the conflict obvious.
-- Do not let the planner directly implement public source unless the human explicitly authorizes that exact exception for the current turn. Ordinary execution requests are not authorization.
+- Do not let the planner directly implement project source unless the human explicitly authorizes that exact exception for the current turn.
 - Do not let a one-turn human override silently become a permanent rule.
 - Keep formal handoff docs separate from informal memo content.
 - Assign Git ownership to exactly one side unless the user explicitly asks otherwise.
